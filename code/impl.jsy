@@ -1,6 +1,7 @@
 class Subscription ::
   get closed() ::
   unsubscribe() ::
+Subscription.prototype.constructor = Object
 
 class SubscriptionObserver ::
   get closed() :: return false
@@ -8,6 +9,7 @@ class SubscriptionObserver ::
   next(value) ::
   error(errorValue) :: throw errorValue
   complete(value) ::
+SubscriptionObserver.prototype.constructor = Object
 
 
 function asSubscription(subscriber, observerArgs) ::
@@ -25,7 +27,6 @@ function asSubscription(subscriber, observerArgs) ::
 
 function createSubscription(ptr_unsubscribe) ::
   return :: __proto__: Subscription.prototype
-    , constructor: Object
     , get closed() :: return 0 === ptr_unsubscribe.length
     , unsubscribe() ::
         const fn_unsubscribe = ptr_unsubscribe.pop()
@@ -57,7 +58,6 @@ function createObserver(subscription, observerArgs) ::
   let _circular
   return ::
       __proto__: SubscriptionObserver.prototype
-    , constructor: Object
     , get closed() :: return isClosed()
     , start() :: return invoke('start', subscription)
     , next(value) :: return invoke('next', value)
