@@ -1,0 +1,93 @@
+require('source-map-support').install()
+
+const symbolObservable = Symbol.observable ? Symbol.observable : '@@observable'
+
+export class Observable ::
+  constructor(subscriber) ::
+    if 'function' !== typeof subscriber ::
+      throw new TypeError('Expected argument to be a function or an object')
+
+    const subscribe = (...observer) =>
+      this._asSubscription @ subscriber, observer
+
+    Object.defineProperty @ this, 'subscribe', @{} value: subscribe
+
+  subscribe(observer) :: // stub to pass compliance test suite -- patched in constructor
+
+  [symbolObservable](...args) :: return this
+
+  static of(...items) ::
+    return fromIterable.call(this, items)
+
+  static from(target) ::
+    if 'function' === typeof target ::
+      return new this(target)
+
+    for const [key, adapter] of observableAdapterRegistry ::
+      const fn = target[key]
+      if 'function' === typeof fn ::
+        return adapter(target, fn, this)
+
+    throw new TypeError @ `Unable to adapt "${typeof target}" to an Observable`
+
+
+Observable.prototype._asSubscription = require('./impl')
+
+
+
+// -- conversion from observables, iterables, and promises --
+
+export const observableAdapterRegistry = @[]
+    @[] symbolObservable, (target, fn, Observable) => fromObservable.call(Observable, fn.call(target))
+  , @[] Symbol.iterator, (target, fn, Observable) => fromIterable.call(Observable, target)
+  , @[] 'subscribe', (target, fn, Observable) => fromObservable.call(Observable, target)
+  , @[] 'then', (target, fn, Observable) => fromPromise.call(Observable, target)
+
+
+export function fromObservable(observable) ::
+  if 'function' === typeof observable ::
+    return new this(observable)
+
+  if null == observable || 'object' !== typeof observable ::
+    throw new TypeError('Expected an observable object')
+
+  if observable.constructor !== this ::
+    return new this @ observer =>
+      observable.subscribe(observer)
+
+  return observable
+
+
+export function fromIterable(iterable) ::
+  const Observable_ = 'function' === typeof this ? this : Observable
+  return new Observable_ @ observer => ::
+    for const value of iterable ::
+      if null === observer :: return
+      observer.next(value)
+
+    if null === observer :: return
+    observer.complete()
+
+    return () => :: observer = null
+
+
+export function fromPromise(promise) ::
+  const Observable_ = 'function' === typeof this ? this : Observable
+  return new Observable_ @ observer => ::
+    promise.then @
+        value => ::
+          if null === observer :: return
+          observer.next(value)
+          observer.complete()
+      , errorValue => ::
+          if null === observer :: return
+          observer.error(errorValue)
+          observer.complete()
+
+    return () => :: observer = null
+
+
+
+export default Observable
+if undefined !== typeof 'module' ::
+  module.exports = exports = Observable

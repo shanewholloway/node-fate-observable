@@ -1,0 +1,127 @@
+class Subscription ::
+  get closed() ::
+  unsubscribe() ::
+
+class SubscriptionObserver ::
+  get closed() :: return false
+  start(subscription) ::
+  next(value) ::
+  error(errorValue) :: throw errorValue
+  complete(value) ::
+
+
+function asSubscription(subscriber, observerArgs) ::
+  const ptr_unsubscribe = [false]
+
+  const subscription = createSubscription(ptr_unsubscribe)
+  const observer = createObserver(subscription, observerArgs)
+
+  ptr_unsubscribe[0] = startSubscription(subscriber, observer)
+
+  if observer.closed ::
+    subscription.unsubscribe()
+  return subscription
+
+
+function createSubscription(ptr_unsubscribe) ::
+  return :: __proto__: Subscription.prototype
+    , constructor: Object
+    , get closed() :: return 0 === ptr_unsubscribe.length
+    , unsubscribe() ::
+        const fn_unsubscribe = ptr_unsubscribe.pop()
+        if fn_unsubscribe ::
+          fn_unsubscribe()
+
+
+function asObserver(observerArgs) ::
+  let observer = observerArgs[0]
+  if 'function' === typeof observer ::
+    observer = {next: observerArgs[0], error: observerArgs[1], complete: observerArgs[2]}
+
+  else if null == observer || 'object' !== typeof observer ::
+    throw new TypeError('Expected a non-null observer object or function')
+
+  return observer
+
+
+function createObserver(subscription, observerArgs) ::
+  let _observer = asObserver(observerArgs)
+
+  const cleanup = () => ::
+    subscription.unsubscribe()
+    _observer = null
+
+  const isClosed = () =>
+    @ null === _observer || _observer.closed || subscription.closed
+
+  let _circular
+  return ::
+      __proto__: SubscriptionObserver.prototype
+    , constructor: Object
+    , get closed() :: return isClosed()
+    , start() :: return invoke('start', subscription)
+    , next(value) :: return invoke('next', value)
+    , error(errorValue) :: return invoke('error', errorValue)
+    , complete(value) :: return invoke('complete', value)
+
+  function invoke(fn_key, payload) ::
+    if isClosed() ::
+      if 'error' === fn_key ::
+        throw payload
+      return
+
+    if _circular :: return cleanup()
+    try ::
+      _circular = true
+      var fn = _observer[fn_key]
+      _circular = false
+    catch err ::
+      _circular = false
+      cleanup()
+      throw err
+
+    if null == fn ::
+      if 'error' === fn_key ::
+        cleanup()
+        throw payload
+      else if 'complete' === fn_key ::
+        cleanup()
+      return
+
+    try ::
+      if 'error' === fn_key || 'complete' === fn_key ::
+        const ans = fn.call(_observer, payload)
+        cleanup()
+        return ans
+      else ::
+        return fn.call(_observer, payload)
+    catch err ::
+      try { cleanup() } catch (err_inner) {}
+      throw err
+
+
+
+function startSubscription(subscriber, observer) ::
+  try ::
+    observer.start()
+    if observer.closed :: return
+
+    const unsub = subscriber(observer)
+
+    if ! unsub ::
+      if null != unsub ::
+        throw new TypeError('Expected argument to be a function or an object')
+    else if 'function' === typeof unsub.unsubscribe ::
+      return () => unsub.unsubscribe()
+    else if 'function' === typeof unsub ::
+      return unsub
+    else ::
+      throw new TypeError('Expected argument to be a function or an object')
+
+  catch err ::
+    return observer.error(err)
+
+
+export default asSubscription
+if undefined !== typeof 'module' ::
+  module.exports = exports = asSubscription

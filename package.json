@@ -1,0 +1,33 @@
+{
+  "name": "fate-observable",
+  "version": "0.0.1",
+  "description": "An ES Observable compliant implementation -- learning by creating",
+  "keywords": [
+    "observable"
+  ],
+  "author": "Shane Holloway <shane.holloway@ieee.org>",
+  "license": "ISC",
+  "homepage": "https://github.com/shanewholloway/node-fate-observable",
+  "bugs": "https://github.com/shanewholloway/node-fate-observable/issues",
+  "repository": "shanewholloway/node-fate-observable",
+  "main": "dist/index.js",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-jsy": "^0.7.1",
+    "es-observable-tests": "^0.3.0"
+  },
+  "babel": {
+    "presets": [
+      "jsy/lean"
+    ]
+  },
+  "scripts": {
+    "prepublish": "npm -s run build && npm -s run test",
+    "preversion": "npm -s run build && npm -s run test",
+    "build": "babel -s inline -x .js,.jsy code -d dist",
+    "watch": "npm -s run build -- --watch",
+    "test": "node test/test-es-observable-compliance"
+  }
+}
