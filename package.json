@@ -1,6 +1,6 @@
 {
   "name": "fate-observable",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "An ES Observable compliant implementation -- learning by creating",
   "keywords": [
     "observable"
@@ -11,6 +11,7 @@
   "bugs": "https://github.com/shanewholloway/node-fate-observable/issues",
   "repository": "shanewholloway/node-fate-observable",
   "main": "dist/index.js",
+  "files": ["dist/", "code/", "test/"],
   "dependencies": {
   },
   "devDependencies": {
