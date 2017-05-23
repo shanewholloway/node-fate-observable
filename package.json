@@ -1,6 +1,6 @@
 {
   "name": "fate-observable",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "An ES Observable compliant implementation -- learning by creating",
   "keywords": [
     "observable"

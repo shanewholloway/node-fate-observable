@@ -43,15 +43,16 @@ export const observableAdapterRegistry = @[]
 
 
 export function fromObservable(observable) ::
-  if 'function' === typeof observable ::
-    return new this(observable)
-
   if null == observable || 'object' !== typeof observable ::
     throw new TypeError('Expected an observable object')
 
   if observable.constructor !== this ::
     return new this @ observer =>
       observable.subscribe(observer)
+
+  if 'function' === typeof observable ::
+    // only convert a function if it doesn't convert any other way
+    return new this(observable)
 
   return observable
 
