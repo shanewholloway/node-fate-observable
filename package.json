@@ -19,7 +19,7 @@
   "dependencies": {},
   "devDependencies": {
     "babel-cli": "^6.24.1",
-    "babel-preset-jsy": "^0.7.1",
+    "babel-preset-jsy": "^0.9.0",
     "es-observable-tests": "^0.3.0"
   },
   "babel": {

@@ -36,10 +36,10 @@ Observable.prototype._asSubscription = require('./impl')
 // -- conversion from observables, iterables, and promises --
 
 export const observableAdapterRegistry = @[]
-    @[] symbolObservable, (target, fn, Observable) => fromObservable.call(Observable, fn.call(target))
-  , @[] Symbol.iterator, (target, fn, Observable) => fromIterable.call(Observable, target)
-  , @[] 'subscribe', (target, fn, Observable) => fromObservable.call(Observable, target)
-  , @[] 'then', (target, fn, Observable) => fromPromise.call(Observable, target)
+  @[] symbolObservable, (target, fn, Observable) => fromObservable.call(Observable, fn.call(target))
+  @[] Symbol.iterator, (target, fn, Observable) => fromIterable.call(Observable, target)
+  @[] 'subscribe', (target, fn, Observable) => fromObservable.call(Observable, target)
+  @[] 'then', (target, fn, Observable) => fromPromise.call(Observable, target)
 
 
 export function fromObservable(observable) ::
@@ -74,14 +74,14 @@ export function fromPromise(promise) ::
   const Observable_ = 'function' === typeof this ? this : Observable
   return new Observable_ @ observer => ::
     promise.then @
-        value => ::
-          if null === observer :: return
-          observer.next(value)
-          observer.complete()
-      , errorValue => ::
-          if null === observer :: return
-          observer.error(errorValue)
-          observer.complete()
+      value => ::
+        if null === observer :: return
+        observer.next(value)
+        observer.complete()
+      errorValue => ::
+        if null === observer :: return
+        observer.error(errorValue)
+        observer.complete()
 
     return () => :: observer = null
 

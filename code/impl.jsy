@@ -26,12 +26,13 @@ function asSubscription(subscriber, observerArgs) ::
 
 
 function createSubscription(ptr_unsubscribe) ::
-  return :: __proto__: Subscription.prototype
-    , get closed() :: return 0 === ptr_unsubscribe.length
-    , unsubscribe() ::
-        const fn_unsubscribe = ptr_unsubscribe.pop()
-        if fn_unsubscribe ::
-          fn_unsubscribe()
+  return @:
+    __proto__: Subscription.prototype
+    get closed() :: return 0 === ptr_unsubscribe.length
+    unsubscribe() ::
+      const fn_unsubscribe = ptr_unsubscribe.pop()
+      if fn_unsubscribe ::
+        fn_unsubscribe()
 
 
 function asObserver(observerArgs) ::
@@ -56,13 +57,13 @@ function createObserver(subscription, observerArgs) ::
     @ null === _observer || _observer.closed || subscription.closed
 
   let _circular
-  return ::
-      __proto__: SubscriptionObserver.prototype
-    , get closed() :: return isClosed()
-    , start() :: return invoke('start', subscription)
-    , next(value) :: return invoke('next', value)
-    , error(errorValue) :: return invoke('error', errorValue)
-    , complete(value) :: return invoke('complete', value)
+  return @:
+    __proto__: SubscriptionObserver.prototype
+    get closed() :: return isClosed()
+    start() :: return invoke('start', subscription)
+    next(value) :: return invoke('next', value)
+    error(errorValue) :: return invoke('error', errorValue)
+    complete(value) :: return invoke('complete', value)
 
   function invoke(fn_key, payload) ::
     if isClosed() ::
